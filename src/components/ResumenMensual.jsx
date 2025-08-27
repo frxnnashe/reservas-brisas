@@ -1,6 +1,29 @@
 import React from "react";
 import { BarChart3, TrendingUp, TrendingDown, DollarSign, Receipt, Home } from "lucide-react";
 
+// Función centralizada para obtener días en un mes
+const getDaysInMonth = (monthName, year) => {
+  const MESES = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+  
+  const monthIndex = MESES.indexOf(monthName);
+  if (monthIndex === -1) {
+    console.warn(`Mes no válido: ${monthName}`);
+    return 31;
+  }
+  
+  // Usar Date constructor con año específico
+  const date = new Date(year, monthIndex + 1, 0);
+  const days = date.getDate();
+  
+  // Debug para verificar cálculos
+  console.log(`${monthName} ${year}: ${days} días`);
+  
+  return days;
+};
+
 const PLANILLAS = ["Depto 1", "Depto 2", "Depto 3", "Depto 4", "Casa"];
 
 const GASTOS = [
@@ -18,9 +41,11 @@ export default function ResumenMensual({
   gastosMensuales,
   updateGastosMensuales,
   selectedMonth,
+  displayYear,
   MESES,
 }) {
-  const gastos = gastosMensuales[selectedMonth] || {
+  // ✅ CORREGIDO: Usar displayYear en la clave de gastos
+  const gastos = gastosMensuales[`${selectedMonth}_${displayYear}`] || {
     Gas: 0,
     Luz: 0,
     Agua: 0,
@@ -34,7 +59,7 @@ export default function ResumenMensual({
     const resumen = {};
 
     PLANILLAS.forEach((planilla) => {
-      const key = `${planilla}_${selectedMonth}`;
+      const key = `${planilla}_${selectedMonth}_${displayYear}`;
       const datos = planillasData[key] || {};
 
       const clientes = {};
@@ -56,12 +81,13 @@ export default function ResumenMensual({
     return resumen;
   };
 
+  // ✅ CORREGIDO: Usar displayYear en la clave de actualización
   const handleGastoChange = (nombre, valor) => {
     const nuevoValor = parseFloat(valor) || 0;
     const nuevosGastosMes = { ...gastos, [nombre]: nuevoValor };
     const nuevosGastosPorMes = {
       ...gastosMensuales,
-      [selectedMonth]: nuevosGastosMes,
+      [`${selectedMonth}_${displayYear}`]: nuevosGastosMes, // Era: [selectedMonth]: nuevosGastosMes
     };
     updateGastosMensuales(nuevosGastosPorMes);
   };
@@ -84,7 +110,7 @@ export default function ResumenMensual({
         </div>
         <div>
           <h2 className="text-xl font-bold text-gray-900">Resumen Financiero</h2>
-          <p className="text-sm text-gray-500">{selectedMonth}</p>
+          <p className="text-sm text-gray-500">{selectedMonth} {displayYear}</p>
         </div>
       </div>
 
@@ -207,7 +233,7 @@ export default function ResumenMensual({
           </div>
           <div className="text-sm opacity-80">
             {balanceFinal >= 0 
-              ? '¡Excelente! Tienes ganancias este mes' 
+              ? 'Tienes ganancias este mes' 
               : 'Los gastos superaron los ingresos'
             }
           </div>

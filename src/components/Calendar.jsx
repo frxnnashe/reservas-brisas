@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar as CalendarIcon, Plus, Home } from "lucide-react";
+import { createCalendarDays, generateStorageKey, isValidDay, getMonthInfo, debugCalendar } from '../utils/dateUtils';
 
 const PLANILLAS = ["Depto 1", "Depto 2", "Depto 3", "Depto 4", "Casa"];
 const COLORS = [
@@ -13,28 +14,27 @@ const getClientColor = (name) => {
   return COLORS[index];
 };
 
-// Función para obtener la cantidad de días en un mes específico
-const getDaysInMonth = (monthName, year = new Date().getFullYear()) => {
-  const MESES = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-  ];
-  
-  const monthIndex = MESES.indexOf(monthName);
-  if (monthIndex === -1) return 31;
-  
-  return new Date(year, monthIndex + 1, 0).getDate();
-};
-
-export default function Calendar({ planillasData, updatePlanillasData, selectedMonth, MESES }) {
+export default function Calendar({ planillasData, updatePlanillasData, selectedMonth, displayYear, MESES }) {
   const [selectedPlanilla, setSelectedPlanilla] = useState(PLANILLAS[0]);
   const [entrada, setEntrada] = useState("");
   const [salida, setSalida] = useState("");
   const [cliente, setCliente] = useState("");
 
-  const currentKey = `${selectedPlanilla}_${selectedMonth}`;
+  // Debugging cada vez que cambian el mes o año
+  useEffect(() => {
+    console.log(`🔄 Calendar: Cambio detectado - ${selectedMonth} ${displayYear}`);
+    debugCalendar(selectedMonth, displayYear);
+  }, [selectedMonth, displayYear]);
+
+  // Usar utilidades centralizadas
+  const monthInfo = getMonthInfo(selectedMonth, displayYear);
+  const currentKey = generateStorageKey(selectedPlanilla, selectedMonth, displayYear);
   const currentData = planillasData[currentKey] || {};
-  const daysInMonth = getDaysInMonth(selectedMonth);
+  const calendarDays = createCalendarDays(selectedMonth, displayYear);
+
+  console.log(`📋 Calendar: Renderizando ${monthInfo.displayName} con ${monthInfo.daysInMonth} días`);
+  console.log(`🔑 Calendar: Usando clave de almacenamiento -> ${currentKey}`);
+  console.log(`📅 Calendar: Array de días generado:`, calendarDays.slice(0, 15), '...');
 
   const handleAgendar = () => {
     const start = parseInt(entrada, 10);
@@ -45,8 +45,9 @@ export default function Calendar({ planillasData, updatePlanillasData, selectedM
       return;
     }
 
-    if (start < 1 || end > daysInMonth || start > end) {
-      alert(`Los días deben estar entre 1 y ${daysInMonth} para ${selectedMonth}.`);
+    // Usar validación centralizada
+    if (!isValidDay(start, selectedMonth, displayYear) || !isValidDay(end, selectedMonth, displayYear) || start > end) {
+      alert(`Los días deben estar entre 1 y ${monthInfo.daysInMonth} para ${monthInfo.displayName}.`);
       return;
     }
 
@@ -85,7 +86,7 @@ export default function Calendar({ planillasData, updatePlanillasData, selectedM
 
     // Feedback de éxito
     const diasReservados = end - start + 1;
-    alert(`✅ ¡Reserva creada exitosamente!\n\nCliente: ${cliente.trim()}\nPropiedad: ${selectedPlanilla}\nDías: ${start} al ${end} (${diasReservados} ${diasReservados === 1 ? 'día' : 'días'})`);
+    alert(`✅ ¡Reserva creada exitosamente!\n\nCliente: ${cliente.trim()}\nPropiedad: ${selectedPlanilla}\nPeríodo: ${start} al ${end} de ${monthInfo.displayName} (${diasReservados} ${diasReservados === 1 ? 'día' : 'días'})`);
 
     setCliente("");
     setEntrada("");
@@ -102,7 +103,10 @@ export default function Calendar({ planillasData, updatePlanillasData, selectedM
         <div>
           <h2 className="text-xl font-bold text-gray-900">Agendar Reserva</h2>
           <p className="text-sm text-gray-500">
-            {selectedMonth} • {daysInMonth} días
+            {monthInfo.displayName} • {monthInfo.daysInMonth} días
+            {monthInfo.isLeapYear && selectedMonth === "Febrero" && (
+              <span className="ml-2 text-green-600 font-medium">🎯 Año bisiesto</span>
+            )}
           </p>
         </div>
       </div>
@@ -136,7 +140,7 @@ export default function Calendar({ planillasData, updatePlanillasData, selectedM
               type="number"
               placeholder="Día"
               min="1"
-              max={daysInMonth}
+              max={monthInfo.daysInMonth}
               value={entrada}
               onChange={(e) => setEntrada(e.target.value)}
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-center font-medium"
@@ -150,7 +154,7 @@ export default function Calendar({ planillasData, updatePlanillasData, selectedM
               type="number"
               placeholder="Día"
               min="1"
-              max={daysInMonth}
+              max={monthInfo.daysInMonth}
               value={salida}
               onChange={(e) => setSalida(e.target.value)}
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-center font-medium"
@@ -187,13 +191,13 @@ export default function Calendar({ planillasData, updatePlanillasData, selectedM
       <div className="space-y-3">
         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
           <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-          {selectedPlanilla}
+          {selectedPlanilla} - {monthInfo.displayName}
         </h3>
         
         {/* Días de la semana */}
         <div className="grid grid-cols-7 gap-1 mb-2">
-          {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((dia, i) => (
-            <div key={i} className="text-center py-2 text-xs font-medium text-gray-500">
+          {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((dia, i) => (
+            <div key={i} className="text-center py-2 text-xs font-medium text-gray-500 bg-gray-100 rounded">
               {dia}
             </div>
           ))}
@@ -201,13 +205,18 @@ export default function Calendar({ planillasData, updatePlanillasData, selectedM
         
         {/* Grid de días */}
         <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
+          {calendarDays.map((day, index) => {
+            if (day === null) {
+              // Espacio vacío para días de la semana anterior
+              return <div key={`empty-${index}`} className="aspect-square"></div>;
+            }
+
             const info = currentData[day];
             const isOccupied = info?.cliente;
             
             return (
               <div
-                key={day}
+                key={`day-${day}`}
                 className={`
                   aspect-square flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 border-2 relative
                   ${isOccupied 

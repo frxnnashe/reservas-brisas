@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Users, Edit3, Trash2, Save, X, MapPin, Calendar, DollarSign } from "lucide-react";
+import {createCalendarDays, generateStorageKey, getMonthInfo } from '../utils/dateUtils';
 
 const PLANILLAS = ["Depto 1", "Depto 2", "Depto 3", "Depto 4", "Casa"];
 
-export default function ListaClientes({ planillasData, updatePlanillasData, selectedMonth, MESES }) {
+export default function ListaClientes({ planillasData, updatePlanillasData, selectedMonth, displayYear, MESES }) {
   const [editingClient, setEditingClient] = useState(null);
   const [editEntrada, setEditEntrada] = useState("");
   const [editSalida, setEditSalida] = useState("");
@@ -12,7 +13,8 @@ export default function ListaClientes({ planillasData, updatePlanillasData, sele
   const agruparPorCliente = () => {
     const agrupado = {};
     PLANILLAS.forEach((planilla) => {
-      const key = `${planilla}_${selectedMonth}`;
+      // ✅ CORREGIDO: Usar displayYear en la clave
+      const key = `${planilla}_${selectedMonth}_${displayYear}`;
       const data = planillasData[key] || {};
       Object.entries(data).forEach(([day, info]) => {
         if (info.cliente) {
@@ -40,7 +42,8 @@ export default function ListaClientes({ planillasData, updatePlanillasData, sele
     if (window.confirm(`¿Eliminar todas las reservas de ${cliente}?`)) {
       const nuevoData = { ...planillasData };
       PLANILLAS.forEach((planilla) => {
-        const key = `${planilla}_${selectedMonth}`;
+        // ✅ CORREGIDO: Usar displayYear en la clave
+        const key = `${planilla}_${selectedMonth}_${displayYear}`;
         if (nuevoData[key]) {
           Object.keys(nuevoData[key]).forEach((day) => {
             if (nuevoData[key][day]?.cliente === cliente) {
@@ -57,7 +60,8 @@ export default function ListaClientes({ planillasData, updatePlanillasData, sele
   const handleMontoChange = (cliente, nuevoMonto) => {
     const nuevoData = { ...planillasData };
     PLANILLAS.forEach((planilla) => {
-      const key = `${planilla}_${selectedMonth}`;
+      // ✅ CORREGIDO: Usar displayYear en la clave
+      const key = `${planilla}_${selectedMonth}_${displayYear}`;
       if (nuevoData[key]) {
         Object.keys(nuevoData[key]).forEach((day) => {
           if (nuevoData[key][day]?.cliente === cliente) {
@@ -87,17 +91,17 @@ export default function ListaClientes({ planillasData, updatePlanillasData, sele
     }
 
     // Validar que los días estén en el rango del mes
-    const daysInMonth = new Date(new Date().getFullYear(), MESES.indexOf(selectedMonth) + 1, 0).getDate();
+    const daysInMonth = new Date(displayYear, MESES.indexOf(selectedMonth) + 1, 0).getDate();
     if (start < 1 || end > daysInMonth) {
-      alert(`Los días deben estar entre 1 y ${daysInMonth} para ${selectedMonth}.`);
+      alert(`Los días deben estar entre 1 y ${daysInMonth} para ${selectedMonth} ${displayYear}.`);
       return;
     }
 
     const nuevoData = { ...planillasData };
     let clienteColor = null;
 
-    // Verificar conflictos en la nueva ubicación ANTES de eliminar las reservas existentes
-    const newKey = `${targetPlanilla}_${selectedMonth}`;
+    // ✅ CORREGIDO: Usar displayYear en la nueva clave
+    const newKey = `${targetPlanilla}_${selectedMonth}_${displayYear}`;
     const diasOcupados = [];
     
     for (let i = start; i <= end; i++) {
@@ -122,7 +126,8 @@ export default function ListaClientes({ planillasData, updatePlanillasData, sele
 
     // Eliminar reservas anteriores del cliente y capturar color
     PLANILLAS.forEach((planilla) => {
-      const key = `${planilla}_${selectedMonth}`;
+      // ✅ CORREGIDO: Usar displayYear en la clave
+      const key = `${planilla}_${selectedMonth}_${displayYear}`;
       if (nuevoData[key]) {
         Object.keys(nuevoData[key]).forEach((day) => {
           if (nuevoData[key][day]?.cliente === clienteOriginal) {
@@ -197,7 +202,7 @@ export default function ListaClientes({ planillasData, updatePlanillasData, sele
           </div>
           <div>
             <h2 className="text-xl font-bold text-gray-900">Lista de Clientes</h2>
-            <p className="text-sm text-gray-500">{selectedMonth}</p>
+            <p className="text-sm text-gray-500">{selectedMonth} {displayYear}</p>
           </div>
         </div>
 
@@ -232,10 +237,10 @@ export default function ListaClientes({ planillasData, updatePlanillasData, sele
             return (
               <div key={cliente} className="bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-200 p-4 space-y-4">
                 {/* Cliente Header */}
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                  <div className="space-y-2">
                     <h3 className="font-semibold text-lg text-gray-900">{cliente}</h3>
-                    <div className="flex flex-wrap gap-2 text-sm text-gray-600">
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 text-sm text-gray-600">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
                         <span>{diasArray.length} días</span>
@@ -248,7 +253,7 @@ export default function ListaClientes({ planillasData, updatePlanillasData, sele
                   </div>
                   
                   {/* Action buttons */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 self-start">
                     {isEditing ? (
                       <>
                         <button
@@ -297,7 +302,7 @@ export default function ListaClientes({ planillasData, updatePlanillasData, sele
                 {isEditing && (
                   <div className="bg-blue-50 rounded-lg p-4 space-y-3">
                     <h4 className="font-medium text-blue-900">Editar Reserva</h4>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
                         <label className="block text-xs font-medium text-blue-800 mb-1">Check-in</label>
                         <input
@@ -336,20 +341,24 @@ export default function ListaClientes({ planillasData, updatePlanillasData, sele
                   </div>
                 )}
 
-                {/* Monto */}
-                <div className="flex items-center gap-3 pt-2 border-t border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <DollarSign className="w-4 h-4" />
-                    <span>Total pagado:</span>
+                {/* Monto - Responsive Layout */}
+                <div className="pt-2 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex items-center gap-2 text-sm text-gray-600 shrink-0">
+                      <DollarSign className="w-4 h-4" />
+                      <span>Total pagado:</span>
+                    </div>
+                    <div className="flex-1 sm:max-w-xs">
+                      <input
+                        type="number"
+                        min={0}
+                        value={info.total || ""}
+                        onChange={(e) => handleMontoChange(cliente, e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-right font-semibold"
+                        placeholder="0"
+                      />
+                    </div>
                   </div>
-                  <input
-                    type="number"
-                    min={0}
-                    value={info.total || ""}
-                    onChange={(e) => handleMontoChange(cliente, e.target.value)}
-                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-right font-semibold"
-                    placeholder="0"
-                  />
                 </div>
               </div>
             );

@@ -1,9 +1,10 @@
 import React from "react";
+import {createCalendarDays, generateStorageKey, getMonthInfo } from '../utils/dateUtils';
 import { Grid3X3, Eye } from "lucide-react";
 
 const PLANILLAS = ["Depto 1", "Depto 2", "Depto 3", "Depto 4", "Casa"];
 
-const getDaysInMonth = (monthName, year = new Date().getFullYear()) => {
+const getDaysInMonth = (monthName, year) => {
   const MESES = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
@@ -15,11 +16,27 @@ const getDaysInMonth = (monthName, year = new Date().getFullYear()) => {
   return new Date(year, monthIndex + 1, 0).getDate();
 };
 
-export default function VistaMensual({ planillasData, selectedMonth, MESES }) {
-  const daysInMonth = getDaysInMonth(selectedMonth);
+// Nueva función para obtener el primer día de la semana del mes
+const getFirstDayOfWeek = (monthName, year) => {
+  const MESES = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+  
+  const monthIndex = MESES.indexOf(monthName);
+  if (monthIndex === -1) return 0;
+  
+  // getDay() devuelve 0 para domingo, 1 para lunes, etc.
+  return new Date(year, monthIndex, 1).getDay();
+};
+
+export default function VistaMensual({ planillasData, selectedMonth, displayYear, MESES }) {
+  const daysInMonth = getDaysInMonth(selectedMonth, displayYear);
+  const firstDayOfWeek = getFirstDayOfWeek(selectedMonth, displayYear);
 
   const getDayData = (planilla, day) => {
-    const key = `${planilla}_${selectedMonth}`;
+    // ✅ CORREGIDO: Usar displayYear en lugar de solo selectedMonth
+    const key = `${planilla}_${selectedMonth}_${displayYear}`;
     const data = planillasData[key] || {};
     return data[day];
   };
@@ -35,9 +52,9 @@ export default function VistaMensual({ planillasData, selectedMonth, MESES }) {
     return COLORS[index];
   };
 
-  // Calcular estadísticas
+  // ✅ CORREGIDO: Calcular estadísticas con displayYear
   const stats = PLANILLAS.reduce((acc, planilla) => {
-    const key = `${planilla}_${selectedMonth}`;
+    const key = `${planilla}_${selectedMonth}_${displayYear}`;
     const data = planillasData[key] || {};
     const ocupados = Object.keys(data).length;
     const porcentaje = ((ocupados / daysInMonth) * 100).toFixed(1);
@@ -50,6 +67,25 @@ export default function VistaMensual({ planillasData, selectedMonth, MESES }) {
     return acc;
   }, {});
 
+  // Crear array de días para el calendario con espacios vacíos al inicio
+  const createCalendarDays = () => {
+    const calendarDays = [];
+    
+    // Agregar espacios vacíos para los días de la semana anterior
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      calendarDays.push(null);
+    }
+    
+    // Agregar los días del mes
+    for (let day = 1; day <= daysInMonth; day++) {
+      calendarDays.push(day);
+    }
+    
+    return calendarDays;
+  };
+
+  const calendarDays = createCalendarDays();
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 space-y-6">
       {/* Header */}
@@ -60,7 +96,7 @@ export default function VistaMensual({ planillasData, selectedMonth, MESES }) {
         <div>
           <h2 className="text-xl font-bold text-gray-900">Vista General</h2>
           <p className="text-sm text-gray-500">
-            {selectedMonth} • {daysInMonth} días
+            {selectedMonth} {displayYear} • {daysInMonth} días
           </p>
         </div>
       </div>
@@ -147,7 +183,8 @@ export default function VistaMensual({ planillasData, selectedMonth, MESES }) {
           {(() => {
             const clientesUnicos = new Set();
             PLANILLAS.forEach(planilla => {
-              const key = `${planilla}_${selectedMonth}`;
+              // ✅ CORREGIDO: Usar displayYear en lugar de solo selectedMonth
+              const key = `${planilla}_${selectedMonth}_${displayYear}`;
               const data = planillasData[key] || {};
               Object.values(data).forEach(info => {
                 if (info?.cliente) clientesUnicos.add(info.cliente);
