@@ -2,7 +2,7 @@ import React from "react";
 import {createCalendarDays, generateStorageKey, getMonthInfo } from '../utils/dateUtils';
 import { Grid3X3, Eye } from "lucide-react";
 
-const PLANILLAS = ["Depto 1", "Depto 2", "Depto 3", "Depto 4", "Casa"];
+const PLANILLAS = ["Depto 1", "Depto 2", "Depto 3", "Depto 4", "Depto 5", "Depto 6", "Casa"];
 
 const getDaysInMonth = (monthName, year) => {
   const MESES = [

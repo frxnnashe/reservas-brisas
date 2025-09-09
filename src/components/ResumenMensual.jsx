@@ -1,30 +1,55 @@
 import React from "react";
-import { BarChart3, TrendingUp, TrendingDown, DollarSign, Receipt, Home } from "lucide-react";
+import {
+  BarChart3,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Receipt,
+  Home,
+} from "lucide-react";
 
 // Función centralizada para obtener días en un mes
 const getDaysInMonth = (monthName, year) => {
   const MESES = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
   ];
-  
+
   const monthIndex = MESES.indexOf(monthName);
   if (monthIndex === -1) {
     console.warn(`Mes no válido: ${monthName}`);
     return 31;
   }
-  
+
   // Usar Date constructor con año específico
   const date = new Date(year, monthIndex + 1, 0);
   const days = date.getDate();
-  
+
   // Debug para verificar cálculos
   console.log(`${monthName} ${year}: ${days} días`);
-  
+
   return days;
 };
 
-const PLANILLAS = ["Depto 1", "Depto 2", "Depto 3", "Depto 4", "Casa"];
+const PLANILLAS = [
+  "Depto 1",
+  "Depto 2",
+  "Depto 3",
+  "Depto 4",
+  "Depto 5",
+  "Depto 6",
+  "Casa",
+];
 
 const GASTOS = [
   { name: "Gas", icon: "🔥" },
@@ -34,6 +59,11 @@ const GASTOS = [
   { name: "Municipalidad", icon: "🏛️" },
   { name: "Rentas", icon: "🏠" },
   { name: "Varios", icon: "📦" },
+  { name: "Impuestos", icon: "📄" },
+  { name: "Jardinero", icon: "🌿" },
+  { name: "Empleada", icon: "🧹" },
+  { name: "Piletero", icon: "🏊‍♂️" },
+  { name: "Marketing", icon: "📈" },
 ];
 
 export default function ResumenMensual({
@@ -53,6 +83,11 @@ export default function ResumenMensual({
     Municipalidad: 0,
     Rentas: 0,
     Varios: 0,
+    Impuestos: 0,
+    Jardinero: 0,
+    Empleada: 0,
+    Piletero: 0,
+    Marketing: 0,
   };
 
   const calcularResumen = () => {
@@ -99,7 +134,10 @@ export default function ResumenMensual({
   );
   const totalGastos = Object.values(gastos).reduce((acc, val) => acc + val, 0);
   const balanceFinal = totalIngresos - totalGastos;
-  const totalDias = Object.values(resumen).reduce((acc, val) => acc + val.dias, 0);
+  const totalDias = Object.values(resumen).reduce(
+    (acc, val) => acc + val.dias,
+    0
+  );
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 space-y-6">
@@ -109,8 +147,12 @@ export default function ResumenMensual({
           <BarChart3 className="w-6 h-6 text-indigo-600" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Resumen Financiero</h2>
-          <p className="text-sm text-gray-500">{selectedMonth} {displayYear}</p>
+          <h2 className="text-xl font-bold text-gray-900">
+            Resumen Financiero
+          </h2>
+          <p className="text-sm text-gray-500">
+            {selectedMonth} {displayYear}
+          </p>
         </div>
       </div>
 
@@ -120,7 +162,9 @@ export default function ResumenMensual({
           <div className="flex justify-center mb-2">
             <TrendingUp className="w-6 h-6 text-green-600" />
           </div>
-          <div className="text-2xl font-bold text-green-700">${totalIngresos.toFixed(0)}</div>
+          <div className="text-2xl font-bold text-green-700">
+            ${totalIngresos.toFixed(0)}
+          </div>
           <div className="text-sm text-green-600 font-medium">Ingresos</div>
         </div>
 
@@ -128,19 +172,39 @@ export default function ResumenMensual({
           <div className="flex justify-center mb-2">
             <TrendingDown className="w-6 h-6 text-red-600" />
           </div>
-          <div className="text-2xl font-bold text-red-700">${totalGastos.toFixed(0)}</div>
+          <div className="text-2xl font-bold text-red-700">
+            ${totalGastos.toFixed(0)}
+          </div>
           <div className="text-sm text-red-600 font-medium">Gastos</div>
         </div>
 
-        <div className={`bg-gradient-to-br ${balanceFinal >= 0 ? 'from-blue-50 to-indigo-100' : 'from-orange-50 to-amber-100'} rounded-lg p-4 text-center`}>
+        <div
+          className={`bg-gradient-to-br ${
+            balanceFinal >= 0
+              ? "from-blue-50 to-indigo-100"
+              : "from-orange-50 to-amber-100"
+          } rounded-lg p-4 text-center`}
+        >
           <div className="flex justify-center mb-2">
-            <DollarSign className={`w-6 h-6 ${balanceFinal >= 0 ? 'text-blue-600' : 'text-orange-600'}`} />
+            <DollarSign
+              className={`w-6 h-6 ${
+                balanceFinal >= 0 ? "text-blue-600" : "text-orange-600"
+              }`}
+            />
           </div>
-          <div className={`text-2xl font-bold ${balanceFinal >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
+          <div
+            className={`text-2xl font-bold ${
+              balanceFinal >= 0 ? "text-blue-700" : "text-orange-700"
+            }`}
+          >
             ${Math.abs(balanceFinal).toFixed(0)}
           </div>
-          <div className={`text-sm font-medium ${balanceFinal >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
-            {balanceFinal >= 0 ? 'Ganancia' : 'Pérdida'}
+          <div
+            className={`text-sm font-medium ${
+              balanceFinal >= 0 ? "text-blue-600" : "text-orange-600"
+            }`}
+          >
+            {balanceFinal >= 0 ? "Ganancia" : "Pérdida"}
           </div>
         </div>
 
@@ -149,7 +213,9 @@ export default function ResumenMensual({
             <Home className="w-6 h-6 text-purple-600" />
           </div>
           <div className="text-2xl font-bold text-purple-700">{totalDias}</div>
-          <div className="text-sm text-purple-600 font-medium">Días ocupados</div>
+          <div className="text-sm text-purple-600 font-medium">
+            Días ocupados
+          </div>
         </div>
       </div>
 
@@ -159,19 +225,28 @@ export default function ResumenMensual({
           <Home className="w-5 h-5 text-gray-600" />
           Ingresos por Propiedad
         </h3>
-        
+
         <div className="overflow-hidden rounded-lg border border-gray-200">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left font-semibold text-gray-900">Propiedad</th>
-                <th className="px-4 py-3 text-center font-semibold text-gray-900">Días</th>
-                <th className="px-4 py-3 text-right font-semibold text-gray-900">Ingreso</th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-900">
+                  Propiedad
+                </th>
+                <th className="px-4 py-3 text-center font-semibold text-gray-900">
+                  Días
+                </th>
+                <th className="px-4 py-3 text-right font-semibold text-gray-900">
+                  Ingreso
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {PLANILLAS.map((planilla, index) => (
-                <tr key={planilla} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <tr
+                  key={planilla}
+                  className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                >
                   <td className="px-4 py-3 font-medium text-gray-900">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -199,7 +274,7 @@ export default function ResumenMensual({
           <Receipt className="w-5 h-5 text-gray-600" />
           Gastos del Mes
         </h3>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {GASTOS.map(({ name, icon }) => (
             <div key={name} className="bg-gray-50 rounded-lg p-4 space-y-3">
@@ -221,21 +296,24 @@ export default function ResumenMensual({
       </div>
 
       {/* Balance final destacado */}
-      <div className={`rounded-xl p-6 ${
-        balanceFinal >= 0 
-          ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' 
-          : 'bg-gradient-to-r from-red-500 to-rose-600 text-white'
-      }`}>
+      <div
+        className={`rounded-xl p-6 ${
+          balanceFinal >= 0
+            ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+            : "bg-gradient-to-r from-red-500 to-rose-600 text-white"
+        }`}
+      >
         <div className="text-center space-y-2">
-          <div className="text-sm font-medium opacity-90">Balance Final del Mes</div>
+          <div className="text-sm font-medium opacity-90">
+            Balance Final del Mes
+          </div>
           <div className="text-4xl font-bold">
-            {balanceFinal >= 0 ? '+' : '-'}${Math.abs(balanceFinal).toFixed(2)}
+            {balanceFinal >= 0 ? "+" : "-"}${Math.abs(balanceFinal).toFixed(2)}
           </div>
           <div className="text-sm opacity-80">
-            {balanceFinal >= 0 
-              ? 'Tienes ganancias este mes' 
-              : 'Los gastos superaron los ingresos'
-            }
+            {balanceFinal >= 0
+              ? "Tienes ganancias este mes"
+              : "Los gastos superaron los ingresos"}
           </div>
         </div>
       </div>

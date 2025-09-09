@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "robots.txt", "icons/*.png"],
       manifest: {
-        name: "Calendario de Reservas",
+        name: "Calendario de Reservas y Gastos",
         short_name: "Reservas",
         description: "Gestión mensual de reservas por planilla",
         start_url: "/",

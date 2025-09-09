@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Users, Edit3, Trash2, Save, X, MapPin, Calendar, DollarSign } from "lucide-react";
 import {createCalendarDays, generateStorageKey, getMonthInfo } from '../utils/dateUtils';
 
-const PLANILLAS = ["Depto 1", "Depto 2", "Depto 3", "Depto 4", "Casa"];
+const PLANILLAS = ["Depto 1", "Depto 2", "Depto 3", "Depto 4", "Depto 5", "Depto 6", "Casa"];
 
 export default function ListaClientes({ planillasData, updatePlanillasData, selectedMonth, displayYear, MESES }) {
   const [editingClient, setEditingClient] = useState(null);
