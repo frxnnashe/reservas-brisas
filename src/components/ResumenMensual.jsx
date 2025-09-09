@@ -41,15 +41,8 @@ const getDaysInMonth = (monthName, year) => {
   return days;
 };
 
-const PLANILLAS = [
-  "Depto 1",
-  "Depto 2",
-  "Depto 3",
-  "Depto 4",
-  "Depto 5",
-  "Depto 6",
-  "Casa",
-];
+const PLANILLAS = ["Depto 1", "Depto 2", "Depto 3", "Depto 4", "Depto 5", "Depto 6", "Depto 7", "Depto 8"];
+
 
 const GASTOS = [
   { name: "Gas", icon: "🔥" },

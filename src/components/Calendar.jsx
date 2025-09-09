@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Calendar as CalendarIcon, Plus, Home } from "lucide-react";
 import { createCalendarDays, generateStorageKey, isValidDay, getMonthInfo, debugCalendar } from '../utils/dateUtils';
 
-const PLANILLAS = ["Depto 1", "Depto 2", "Depto 3", "Depto 4", "Depto 5", "Depto 6", "Casa"];
+const PLANILLAS = ["Depto 1", "Depto 2", "Depto 3", "Depto 4", "Depto 5", "Depto 6", "Depto 7", "Depto 8"];
 const COLORS = [
   "bg-emerald-400", "bg-blue-400", "bg-violet-400", "bg-pink-400",
   "bg-amber-400", "bg-orange-400", "bg-red-400", "bg-teal-400"
